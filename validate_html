@@ -1,0 +1,40 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+source ${bin_dir}/query_functions
+
+function validate_page()
+{
+    local url=$1
+
+    validate $url
+
+    if [ $? -ne 0 ];then
+	echo Error validating $url
+	let "num_errors += 1"
+    fi
+}
+
+num_errors=0
+
+if [ $# == 0 ]; then
+    urls=`query_print_page_and_post_urls`
+
+    for url in $urls; do
+        validate_page $url
+    done
+
+    validate_page ${local_url}/?s=ex
+    validate_page ${local_url}/?s=sfidsifdsifdsfji
+else
+    validate_page $1
+fi
+
+if [ $num_errors -eq 0 ];then
+    exit 0
+else
+    echo There were validation errors
+    exit 1
+fi

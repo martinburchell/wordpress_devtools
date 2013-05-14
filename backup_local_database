@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+source website_config
+
+source backup_functions
+
+mkdir -p $local_backups_dir
+
+backup_database $local_backups_dir $local_wordpress_user $local_wordpress_password $local_wordpress_db

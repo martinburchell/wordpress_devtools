@@ -1,0 +1,14 @@
+#! /usr/bin/expect
+set timeout -1
+spawn {*}$argv
+expect {
+    default {exit 1}
+    "Password:"
+}
+send -r "$::env(ftp_password)\n"
+expect {
+    -re "rsync: delete_file: unlink.*" {exp_continue}
+    -re "rsync:.*" {exit 1}
+    -re "rsync error:" {exit 1}
+    eof {exit}
+}

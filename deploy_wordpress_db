@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -e
+
+source website_config
+
+source error_functions
+source file_functions
+source rsync_functions
+source backup_functions
+
+function import_sql()
+{
+    local sql_script=$1
+
+    params=\&start=1\&foffset=0\&totalqueries=0
+    curl $bigdump_url?fn=${sql_script}${params} | links -dump
+}
+
+function sync_backup_directory()
+{
+    rsync_copy_changes $temp_dir/ ${wordpress_remote_target}backups/
+}
+
+echo "Fetching copy of remote database sql, just to be sure..."
+$bin_dir/fetch_wordpress_db
+
+echo "Dumping local database sql..."
+
+backup_database $local_backups_dir $local_wordpress_user $local_wordpress_password $local_wordpress_db
+
+zipped_backup_basename=${backup_basename}.gz
+
+# fetch remote database sql
+# svn commit
+# compare
+# confirm
+
+temp_dir=`file_print_temporary_name`/backups
+mkdir -p $temp_dir
+
+gzip -c $backup_path > $temp_dir/${zipped_backup_basename}
+
+zipped_update_url_basename=$( basename "$update_url_script" ).gz
+gzip -c $update_url_script > $temp_dir/$zipped_update_url_basename
+cp $bigdump_script $temp_dir
+
+sync_backup_directory
+
+import_sql $zipped_backup_basename
+import_sql $zipped_update_url_basename
+
+rm -r $temp_dir/*.*
+
+sync_backup_directory
+
+rmdir $temp_dir

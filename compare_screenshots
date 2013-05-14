@@ -1,0 +1,122 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+source ${bin_dir}/query_functions
+
+log_file=$logs_dir/compare_screenshots.log
+xvfb_log_file=$logs_dir/xvfb.log
+
+function compare_screenshots()
+{
+    local url=$1
+    local image_file=${url/$local_url/}.png
+    local baseline=$screenshots_dir/baseline/$image_file
+
+    if [ ! -f $baseline ]; then
+	echo "Creating baseline for $url" >> $log_file
+        take_screenshot $url $baseline
+    else
+	echo "Baseline exists" >> $log_file
+	local latest=$screenshots_dir/latest/$image_file
+	take_screenshot $url $latest
+
+	local diff=$screenshots_dir/diff/$image_file
+	compare_images $baseline $latest $diff
+    fi
+}
+
+function take_screenshot()
+{
+    local url=$1
+    local out_file=$2
+
+    echo "Capturing $url as $out_file..." >> $log_file
+    
+    export DISPLAY=:99.0
+    $cutycapt --url=$url --out=$out_file &>> $log_file
+    if [ $? != 0 ]; then
+	echo "Failed to download $url"
+	exit 1
+    fi
+}
+
+function get_image_height()
+{
+    local image=$1
+
+    identify -format '%h' $image
+}
+
+function compare_images()
+{
+    local image1=$1
+    local image2=$2
+    local diff_image=$3
+
+    diff $image1 $image2 >> $log_file
+
+    if [ "$?" == "0" ]; then
+	echo "Image files are exactly the same" >> $log_file
+    else
+	image1_height=$(get_image_height $image1)
+	image2_height=$(get_image_height $image2)
+
+	if [ $image1_height -gt $image2_height ]; then
+	    large_image=$image1
+	    small_image=$image2
+	else
+	    large_image=$image2
+	    small_image=$image1
+	fi
+
+	results=`compare -metric rmse -subimage-search $large_image $small_image $diff_image 2>&1 | cut -d ' ' -f 1`
+
+	if [ "$results" == "0" ]; then
+	    echo "Images match exactly" >> $log_file
+	else
+	    echo "Images were different - $results" >> $log_file
+
+	    let "num_errors += 1"
+	fi
+    fi
+}
+
+echo >> $log_file
+echo "##################################################################" >> $log_file
+echo "Started screenshot comparison on $(date)" >> $log_file
+
+mkdir -p $screenshots_dir/baseline
+rm -r $screenshots_dir/latest
+mkdir -p $screenshots_dir/latest
+rm -r $screenshots_dir/diff
+mkdir -p $screenshots_dir/diff
+
+num_errors=0
+
+Xvfb :99 -screen 0 1024x768x24 &> $xvfb_log_file &
+xvfb_pid=$!
+
+if [ $# == 1 ]; then
+    compare_screenshots "$1"
+else
+    urls=`query_print_page_and_post_urls`
+
+    for url in $urls; do
+        compare_screenshots "$url"
+    done
+
+    compare_screenshots "${local_url}/?s=refurbishment"
+    compare_screenshots "${local_url}/?s=sfidsifdsifdsfji"
+fi
+
+kill $xvfb_pid
+
+if [ $num_errors -eq 0 ];then
+    echo No differences
+    exit 0
+else
+    echo "Number of changed pages:$num_errors"
+    exit 1
+fi

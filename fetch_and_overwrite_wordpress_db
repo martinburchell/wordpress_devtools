@@ -1,0 +1,28 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+mkdir -p $debug_dir
+
+log_file=$logs_dir/remote_backup.log
+
+send_email=0
+
+prompt=0
+
+php ${bin_dir}/fetch_wordpress_db.php $remote_site_url $admin_user $admin_password $debug_dir $remote_backups_dir $local_url $local_wordpress_server $local_wordpress_user $local_wordpress_password $local_wordpress_db $local_backups_dir $prompt > $log_file
+
+if [[ $? -ne 0 ]]; then
+    echo "*** Fetch failed ***"
+    send_email=1
+fi
+
+if [[ ${send_email} -ne 0 ]]; then
+    cat ${log_file}
+    exit 1
+fi
+
+${bin_dir}/delete_remote_backups
+${bin_dir}/delete_local_backups

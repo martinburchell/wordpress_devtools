@@ -1,0 +1,7 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+${bin_dir}/delete_backups ${wordpress_local_source} ${local_config_file} local

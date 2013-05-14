@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source website_config
+
+source error_functions
+source svn_functions
+source rsync_functions
+source confirm_functions
+
+svn_ensure_changes_checked_in $local_uploads_dir
+
+echo Checking for remote changes
+rsync_list_changes $local_uploads_dir $remote_uploads_dir
+
+if confirm "Proceed with these changes?"; then
+    echo Copying changes to remote site
+    rsync_copy_changes $local_uploads_dir $remote_uploads_dir
+    exit 0
+else
+    echo Aborted
+
+    exit 1
+fi

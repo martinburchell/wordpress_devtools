@@ -1,0 +1,42 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+source ${bin_dir}/error_functions
+source ${bin_dir}/rsync_functions
+
+if [ $# != 3 ]; then
+    echo "Usage: $0 <wordpress_dir> <config_file> <prefix>" 
+    exit 1
+fi
+
+wordpress_dir=$1
+config_file=$2
+prefix=$3
+
+log_file=$logs_dir/delete_${prefix}_backups.log
+
+# Match backup directory name in wordpress/wp-content/plugins/remote-database-backup/backup.php
+db_password=`grep "DB_PASSWORD" $config_file | cut -f2 -d"," | cut -f2 -d"'"`
+
+rand=`echo -n $db_password | md5sum | cut -f1 -d" "`
+rand=`echo -n $rand | md5sum | cut -f1 -d" " | cut -c 28-`
+
+backup_dir_on_server=${wordpress_dir}wp-content/backup-${rand}
+
+temp_backup_dir=/tmp/backup-${rand}
+
+mkdir -p $temp_backup_dir
+
+rsync_copy_changes_no_mods ${temp_backup_dir}/ ${backup_dir_on_server} >> $log_file
+
+if [[ $? -ne 0 ]]; then
+    echo "*** Deleting of $prefix backup failed ***"
+    send_email=1
+fi
+
+if [[ ${send_email} -ne 0 ]]; then
+    cat ${log_file}
+    exit 1
+fi

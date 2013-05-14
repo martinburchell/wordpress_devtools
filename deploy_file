@@ -1,0 +1,33 @@
+#!/bin/bash
+
+source website_config
+
+source error_functions
+source svn_functions
+source rsync_functions
+source confirm_functions
+source file_functions
+
+if [ $# -ne 2 ]; then
+    echo "Unexpected number of arguments ($# != 2) - exiting..."
+    exit 1
+fi
+
+source_file=$1
+target_file=$2
+
+svn_ensure_changes_checked_in $source_file
+
+temp_file=`file_print_temporary_name`.tmp
+
+rsync_copy_file $target_file $temp_file
+
+echo "Before you do that, here are the changes beween the new and old files:"
+diff $temp_file $source_file
+
+if confirm "Proceed with these changes?"; then
+    echo Copying...
+    rsync_copy_file $source_file $target_file
+else
+    echo Aborted
+fi

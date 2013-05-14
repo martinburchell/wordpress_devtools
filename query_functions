@@ -1,0 +1,4 @@
+query_print_page_and_post_urls()
+{
+    mysql -BN -e "SELECT guid FROM wp_posts WHERE post_type IN ('page','post') AND post_status='publish';" -u $local_wordpress_user -p$local_wordpress_user $local_wordpress_db
+}

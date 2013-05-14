@@ -1,0 +1,4 @@
+file_print_temporary_name()
+{
+    echo "/tmp/$(basename $0).$$"
+}

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+source ${bin_dir}/confirm_functions
+
+baseline_dir=$screenshots_dir/baseline
+latest_dir=$screenshots_dir/latest
+diff_dir=$screenshots_dir/diff
+
+cd $diff_dir
+
+for file in $(ls $diff_dir)
+do
+    dash_pos=$(expr index "$file" -)
+
+    if [ "$dash_pos" == "0" ]; then
+	base_file="$file"
+    else
+	base_file="${file::$dash_pos -1}.png"
+    fi
+
+    if [ "$dash_pos" == "0" ] || [ "${file:$dash_pos:1}" == "0" ]; then
+	gpicview "$file" &
+	if confirm "Reset baseline?"; then
+	    mv "$latest_dir/$base_file" "$baseline_dir"
+	fi
+	kill -15 $!
+    fi
+done

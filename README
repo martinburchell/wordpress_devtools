@@ -1,0 +1,233 @@
+This is a collection of tools for managing a WordPress website.
+
+These are designed to work where there is only limited access to the
+live server, namely rsync with expect to automate password entry.
+
+See the prerequisites for each tool below.
+
+You need to copy website_config.example to website_config and change all of the
+settings to something appropriate for your environment. 
+
+The assumed workflow is:
+* Updates to code, plugins etc are made on the local dev server and checked into
+  version control before deploying to the live aka remote server
+* Updates to the database and uploads are made on the live server, which can be
+  fetched and installed locally
+
+There are also scripts to overwrite the remote database and uploads with the 
+local ones 
+
+
+backup_functions
+----------------
+Function to backup MySQL database to file with date stamp
+
+
+backup_local_database
+----------------------
+Backs up the local WordPress database.
+
+
+bigdump.php
+-----------
+Third party script used when copying local DB to live server
+
+
+compare_screenshots
+-------------------
+Takes a snapshot of each page on the website and compares it with the baseline 
+to check for regressions
+Requires:
+* CutyCapt
+* ImageMagick
+* Xvfb
+
+
+confirm_functions
+-----------------
+Prompts the user to enter Y or N
+
+
+delete_backups
+--------------
+Deletes backups created by the Remote Database Backup Plugin
+ 
+
+delete_local_backups
+--------------------
+Deletes backups created by the Remote Database Backup Plugin on the local 
+instance of WordPress
+
+
+delete_remote_backups
+---------------------
+Deletes backups created by the Remote Database Backup Plugin on the remote 
+instance of WordPress
+
+
+deploy_config
+-------------
+Copies wp-config.php to the remote server, following confirmation (this would 
+not normally be the same file as the local wp-config.php).
+
+
+deploy_file
+-----------
+Copies a single file to the remote server
+
+
+deploy_wordpress_code
+---------------------
+Copies code changes from the local to the remote server, following confirmation.
+
+
+deploy_wordpress_db
+-------------------
+Dumps local wordpress database to the backups directory
+Copies into temporary directory update_url script into temporary directory
+Copies the "big dump" (mysql importer) script into the temporary directory
+Copies the temporary directory into the remote backup directory
+Invokes the "big dump" script on the remote server 
+Invokes the "update url" script on the remote server
+Cleans up the temporary directory
+Removes the remote backup directory
+
+
+deploy_wordpress_uploads
+------------------------
+Copy local uploads directory to remote server
+
+
+error_functions
+---------------
+Exits with an error message if an error occurred.
+ 
+
+fetch_and_overwrite_uploads
+---------------------------
+Quietly overwrites the local uploads directory with the one on the remote server
+
+
+fetch_and_overwrite_wordpress_db
+--------------------------------
+Quietly overwrites the local database with the one on the remote server
+
+
+fetch_wordpress_code
+--------------------
+Quietly makes a local backup copy of the code on the remote server
+
+To compare the local copy of the remote code with the working local copy:
+$ diff -r -q -x .svn wordpress remote_copy/wordpress
+
+
+fetch_wordpress_db
+------------------
+Quietly makes a local backup copy of the WordPress database on the
+remote server. Uses the Remote Database Backup plugin
+
+
+fetch_wordpress_db.php
+----------------------
+Third party script to activate the Remote Database Backup Plugin.
+See http://www.bin-co.com/blog/2008/10/remote-database-backup-wordpress-plugin/
+
+
+file_functions
+--------------
+Generates a temporary file name
+
+
+get_logs
+--------
+Takes a copy of the most recent access log from the live server and
+saves it if it is newer than the latest one
+
+
+list_pages
+----------
+Lists the URLs for all of the posts and pages of the WordPress site
+
+
+overwrite_local_db_with_remote
+------------------------------
+Uses the Remote Database Backup plugin to fetch the database from the
+live server, compares it with the local database and prompts the user
+to overwrite it. The comparison is not particularly helpful because
+normally there are lots of differences.
+
+
+overwrite_local_uploads_with_remote
+-----------------------------------
+Overwrites the local uploads directory with the one on the remote
+server but only after the user has had a chance to review the
+differences and approve the overwrite
+
+
+query_functions
+---------------
+MySQL query to select the URLs from all posts and pages
+
+
+refresh_calendar.py
+-------------------
+Automatically refreshes the feed of a Google Calendar of Events plugin
+Uses submodule web_automation
+
+
+rsync_files
+-----------
+Expect script to automate rsync with password entry
+
+
+rsync_functions
+---------------
+Copies files to and from remote server
+
+
+start_user_test
+---------------
+A wrapper around recordmydesktop to save the results of user testing
+Requires:
+* recordmydesktop
+
+
+svn_functions
+-------------
+Check files are under version control
+
+
+update_local_urls_with_remote.sql
+---------------------------------
+Example SQL to replace the domains in local URLs in WordPress tables with remote ones 
+
+
+update_remote_urls_with_local.sql
+---------------------------------
+Example SQL to replace the domains in remote URLs in WordPress tables with local ones 
+
+
+validate_html
+-------------
+Runs the W3C validator on all pages and posts of the WordPress site.
+Requires:
+* validate (WDG offline validator)
+
+
+view_screenshot_diffs
+---------------------
+Used in conjunction with compare_screenshots to review screenshot changes and
+optionally reset the baseline if the change is acceptable
+Requires:
+* gpicview
+
+
+website_config.py
+-----------------
+Python wrapper to read variables from website_config into python scripts
+
+
+wordpress_admin.py
+------------------
+Automates Wordpress Admin functionality
+Uses web_automation submodule

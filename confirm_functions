@@ -1,0 +1,9 @@
+confirm()
+{
+    prompt=$1
+
+    read -p "$prompt (y/N)" answer
+    answer=$(tr '[:upper:]' '[:lower:]' <<<$answer)
+    
+    [[ "$answer" = "y" || "$answer" == "yes" ]]
+}

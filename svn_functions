@@ -1,0 +1,28 @@
+svn_ensure_changes_checked_in() 
+{
+    path=$1
+
+    svn_ensure_under_version_control ${path}
+
+    changes_not_in_svn=`svn status ${path} | wc -l`
+
+    if [ "$changes_not_in_svn" != "0" ]; then
+	echo There are changes not checked into version control
+	svn status ${path}
+	echo Check these files in and try again
+
+	exit 1
+    fi
+}
+
+svn_ensure_under_version_control()
+{
+    path=$1
+
+    directory_to_check=$( dirname "$path" )
+
+    if [ ! -d $directory_to_check/.svn ]; then
+	echo $directory_to_check is not under version control
+	exit 1
+    fi
+}

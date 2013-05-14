@@ -1,0 +1,35 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+source ${bin_dir}/error_functions
+source ${bin_dir}/rsync_functions
+
+log_file=$logs_dir/get_logs.log
+
+date_stamp=`date +%F_%H-%M-%S`
+year=`date +%Y`
+
+local_access_dir=$logs_dir/access/$year
+mkdir -p $local_access_dir
+
+access_log=$local_access_dir/${date_stamp}.log.gz
+access_link=$local_access_dir/access_log.gz
+
+rsync_copy_changes $remote_logs_dir/access_log.processed.1.gz $access_log > $log_file
+
+if [ -h $access_link ]; then
+    diff $access_link $access_log > /dev/null
+
+    if [ "$?" == "0" ]; then
+	rm $access_log
+	exit
+    else
+	rm $access_link
+    fi
+fi
+
+echo "New log file downloaded $access_log"
+ln -s $access_log $access_link

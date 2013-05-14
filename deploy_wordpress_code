@@ -1,0 +1,25 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+source ${bin_dir}/error_functions
+source ${bin_dir}/svn_functions
+source ${bin_dir}/rsync_functions
+source ${bin_dir}/confirm_functions
+
+svn_ensure_changes_checked_in $wordpress_local_source
+
+echo Checking for remote changes
+rsync_list_changes $wordpress_local_source $wordpress_remote_target --exclude='wp-content/uploads'
+
+if confirm "Proceed with these changes?"; then
+    echo Copying changes to remote site
+    rsync_copy_changes $wordpress_local_source $wordpress_remote_target --exclude='wp-content/uploads'
+    exit 0
+else
+    echo Aborted
+
+    exit 1
+fi

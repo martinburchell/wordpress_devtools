@@ -1,0 +1,33 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+log_file=${logs_dir}/remote_code_backup.log
+
+send_email=0
+
+source ${bin_dir}/error_functions
+source ${bin_dir}/rsync_functions
+
+cd $remote_code_backups_dir
+
+date_stamp=`date +%F_%H-%M-%S`
+
+wordpress_copy_of_remote_target=${remote_code_backups_dir}/wordpress/
+rsync_copy_changes $wordpress_remote_source $wordpress_copy_of_remote_target > $log_file
+if [[ $? -ne 0 ]]; then
+    echo "*** Fetch failed ***"
+    send_email=1
+fi
+
+tar cfz remote_code_${date_stamp}.tgz wordpress
+if [[ $? -ne 0 ]]; then
+    echo "*** tar failed ***"
+    send_email=1
+fi
+
+if [[ ${send_email} -ne 0 ]]; then
+    cat ${log_file}
+fi

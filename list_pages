@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source website_config
+source query_functions
+
+urls=`query_print_page_and_post_urls`
+
+for url in $urls; do
+echo $url
+done

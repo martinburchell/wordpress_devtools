@@ -1,0 +1,61 @@
+rsync_list_changes()
+{
+    local source=$1
+    local dest=$2
+    local options=$3
+
+    do_rsync $source $dest "-nrlpt $options" $rsync_exclude_file
+}
+
+rsync_copy_changes()
+{
+    local source=$1
+    local dest=$2
+    local options=$3
+
+    do_rsync $source $dest "-rlpt $options" $rsync_exclude_file 
+}
+
+rsync_copy_changes_no_exclude()
+{
+    local source=$1
+    local dest=$2
+    local options=$3
+
+    do_rsync $source $dest "-rlpt $options"
+}
+
+rsync_copy_changes_no_mods()
+{
+    local source=$1
+    local dest=$2
+    local options=$3
+
+    do_rsync $source $dest "-rl $options" $rsync_exclude_file
+}
+
+do_rsync()
+{
+    local source=$1
+    local dest=$2
+    local options=$3
+    local exclude_file=$4
+
+    if [ "$exclude_file" != "" ]; then
+	exclude_option="--exclude-from=${exclude_file}"
+    fi
+    
+    export ftp_password
+    expect $rsync_script rsync --delete --progress --protocol=29 $options $exclude_option $source $dest
+
+    error_check $? "Problem with rsync script"
+}
+
+rsync_copy_file()
+{
+    local source=$1
+    local dest=$2
+
+    export ftp_password
+    expect $rsync_script scp $source $dest
+}

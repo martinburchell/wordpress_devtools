@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ "$#" -ne "2" ]; then
+    echo "Usage $0 <initials> <test code>"
+    exit 1
+fi
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+source ${bin_dir}/error_functions
+
+initials=$1
+test_code=$2
+
+browser=google-chrome
+
+$browser $local_url &
+browser_pid=$!
+
+video_dir=${website_dir}/user_testing
+date=`date +%Y%m%d%H%M%S`
+file_name=${video_dir}/${test_code}-${initials}-${date}
+echo Recording audio to $file_name
+
+echo Press CTRL-C to stop the recording
+
+recordmydesktop $file_name
+error_check $? "recordmydesktop failed - see the man page"
+

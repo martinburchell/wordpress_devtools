@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+source ${bin_dir}/error_functions
+source ${bin_dir}/rsync_functions
+
+changes_not_in_svn=`svn status ${wordpress_local_uploads} | wc -l`
+
+if [ "$changes_not_in_svn" != "0" ]; then
+    svn status ${wordpress_local_uploads}
+    echo "*** There were local uploads not checked in ***"
+    exit 1
+fi
+
+log_file=$logs_dir/overwrite_uploads.log
+send_email=0
+
+rsync_copy_changes_no_mods $wordpress_remote_uploads $wordpress_local_uploads > $log_file
+
+svn status ${wordpress_local_uploads}
+
+if [[ $? -ne 0 ]]; then
+    echo "*** Failed to copy uploads ***"
+    send_email=1
+fi
+
+if [[ ${send_email} -ne 0 ]]; then
+    cat ${log_file}
+    exit 1
+fi

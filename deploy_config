@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source website_config
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+${bin_dir}/deploy_file $local_copy_of_remote_config_file $remote_config_file

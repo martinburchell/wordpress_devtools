@@ -1,0 +1,11 @@
+error_check()
+{
+    code=${1}
+    failure_text=${2}
+
+    if [ "${code}" -ne "0" ]; then
+	echo "Error # ${code} : ${failure_text}"
+
+	exit ${code}
+    fi
+}

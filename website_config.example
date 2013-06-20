@@ -14,10 +14,6 @@ wordpress_remote_target=${remote_httpdocs}
 wordpress_local_uploads=${wordpress_local_source}wp-content/uploads/
 wordpress_remote_uploads=${wordpress_remote_source}wp-content/uploads/
 
-svn_repository=http://localhost/svn/repo/my_svn_project
-svn_user=my_svn_user
-svn_password=abc123
-
 bin_dir="$( cd "$( dirname "$0" )" && pwd )"
 rsync_script=${bin_dir}/rsync_files
 rsync_exclude_file=${bin_dir}/.rsync_exclude

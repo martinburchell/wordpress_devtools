@@ -9,10 +9,10 @@ source ${bin_dir}/website_config
 source ${bin_dir}/error_functions
 source ${bin_dir}/rsync_functions
 
-changes_not_in_svn=`svn status ${wordpress_local_uploads} | wc -l`
+changes_not_in_git=`git status -s ${wordpress_local_uploads} | wc -l`
 
-if [ "$changes_not_in_svn" != "0" ]; then
-    svn status ${wordpress_local_uploads}
+if [ "$changes_not_in_git" != "0" ]; then
+    git status ${wordpress_local_uploads}
     echo "*** There were local uploads not checked in ***"
     exit 1
 fi
@@ -22,7 +22,7 @@ send_email=0
 
 rsync_copy_changes_no_mods $wordpress_remote_uploads $wordpress_local_uploads > $log_file
 
-svn status ${wordpress_local_uploads}
+git status -s ${wordpress_local_uploads}
 
 if [[ $? -ne 0 ]]; then
     echo "*** Failed to copy uploads ***"

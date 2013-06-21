@@ -9,6 +9,8 @@ source ${bin_dir}/website_config
 source ${bin_dir}/error_functions
 source ${bin_dir}/rsync_functions
 
+cd ${website_dir}
+
 changes_not_in_git=`git status -s ${wordpress_local_uploads} | wc -l`
 
 if [ "$changes_not_in_git" != "0" ]; then
@@ -22,6 +24,7 @@ send_email=0
 
 rsync_copy_changes_no_mods $wordpress_remote_uploads $wordpress_local_uploads > $log_file
 
+cd ${website_dir}
 git status -s ${wordpress_local_uploads}
 
 if [[ $? -ne 0 ]]; then

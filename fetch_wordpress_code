@@ -22,7 +22,7 @@ if [[ $? -ne 0 ]]; then
     send_email=1
 fi
 
-tar cfz remote_code_${date_stamp}.tgz wordpress
+tar cfz remote_code_${date_stamp}.tgz --exclude "uploads/*" wordpress
 if [[ $? -ne 0 ]]; then
     echo "*** tar failed ***"
     send_email=1

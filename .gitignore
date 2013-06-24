@@ -1,3 +1,4 @@
 *~
 website_config
 .rsync_exclude
+*.pyc

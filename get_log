@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <log_prefix> <log_dir>"
+    exit 1
+fi
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+source ${bin_dir}/error_functions
+source ${bin_dir}/rsync_functions
+
+log_prefix=$1
+log_dir=$2
+
+command_log_file=$logs_dir/get_${log_prefix}.log
+
+date_stamp=`date +%F_%H-%M-%S`
+year=`date +%Y`
+
+local_log_dir=$logs_dir/$log_dir/$year
+mkdir -p $local_log_dir
+
+log_file=$local_log_dir/${date_stamp}.log.gz
+log_link=$local_log_dir/${log_prefix}.gz
+
+rsync_copy_changes $remote_logs_dir/${log_prefix}.processed.1.gz $log_file > $command_log_file
+
+if [ -h $log_link ]; then
+    diff $log_link $log_file > /dev/null
+
+    if [ "$?" == "0" ]; then
+	rm $log_file
+	exit
+    else
+	rm $log_link
+    fi
+fi
+
+echo "New log file downloaded $log_file"
+ln -s $log_file $log_link

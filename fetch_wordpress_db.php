@@ -89,16 +89,48 @@ if($sync_with_local)
     if ($overwrite)
     {
         print "Importing...\n";
-        `mysql -h $local_db_server -u $local_db_username -p$local_db_password $local_db < $remote_tmp_file`;
+        $output = array();
+
+        exec("mysql -h $local_db_server -u $local_db_username -p$local_db_password $local_db < $remote_tmp_file", $output, $return_code);
+
+        if ($return_code != 0)
+        {
+            print_r($output); 
+            exit($return_code);
+        }
+
         unlink($remote_tmp_file);
         unlink($local_tmp_file);        
 
-        mysql_connect($local_db_server,$local_db_username,$local_db_password);
-        mysql_select_db($local_db);
+        $link = mysql_connect($local_db_server,$local_db_username,$local_db_password);
+        if ($link === false)
+        {
+            echo "Failed to connect to database $local_db_server";
+            exit(1);
+        }
 
-        mysql_query("UPDATE wp_options SET option_value = replace(option_value, '$site_url', '$local_url')");
-        mysql_query("UPDATE wp_posts SET guid = replace(guid, '$site_url', '$local_url')");
-        mysql_query("UPDATE wp_posts SET post_content = replace(post_content, '$site_url', '$local_url')");
+        $success = mysql_select_db($local_db);
+        if ($success === false)
+        {
+            echo "Failed to select database $local_db";
+            exit(1);
+        }
+
+        $updates = array(
+            "UPDATE wp_options SET option_value = replace(option_value, '$site_url', '$local_url')",
+            "UPDATE wp_posts SET guid = replace(guid, '$site_url', '$local_url')",
+            "UPDATE wp_posts SET post_content = replace(post_content, '$site_url', '$local_url')",
+            );
+
+        foreach($updates as $update)
+        {
+            $success = mysql_query($update);
+            if ($success === false)
+            {
+                echo "Query failed:\n$update";
+                exit(1);
+            }
+        }
         
         print "Import Done\n";
     }

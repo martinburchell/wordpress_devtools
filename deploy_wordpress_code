@@ -8,9 +8,10 @@ source ${bin_dir}/error_functions
 source ${bin_dir}/rsync_functions
 source ${bin_dir}/confirm_functions
 
-changes_not_in_git=`git status -s ${wordpress_local_source} | wc -l`
+changes_not_in_git=`cd ${wordpress_local_source}; git status -s ${wordpress_local_source} | wc -l`
 
 if [ "$changes_not_in_git" != "0" ]; then
+    cd ${wordpress_local_source}
     git status ${wordpress_local_source}
     echo "*** There were local files not checked in ***"
     exit 1

@@ -46,6 +46,7 @@ do_rsync()
     fi
     
     export ftp_password
+    export ftp_password_prompt
     expect $rsync_script rsync --delete --progress --protocol=29 $options $exclude_option $source $dest
 
     error_check $? "Problem with rsync script"

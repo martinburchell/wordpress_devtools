@@ -3,7 +3,7 @@ set timeout -1
 spawn {*}$argv
 expect {
     default {exit 1}
-    "Password:"
+    "$::env(ftp_password_prompt)"
 }
 send -r "$::env(ftp_password)\n"
 expect {

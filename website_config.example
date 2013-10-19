@@ -7,6 +7,7 @@ remote_httpdocs=${ftp_address}:httpdocs/
 remote_statistics=${ftp_address}:statistics/
 
 ftp_password=abc123
+ftp_password_prompt=Password:
 
 wordpress_remote_source=${remote_httpdocs}
 wordpress_remote_target=${remote_httpdocs}

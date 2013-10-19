@@ -45,8 +45,7 @@ do_rsync()
 	exclude_option="--exclude-from=${exclude_file}"
     fi
     
-    export ftp_password
-    export ftp_password_prompt
+    export_variables_to_expect
     expect $rsync_script rsync --delete --progress --protocol=29 $options $exclude_option $source $dest
 
     error_check $? "Problem with rsync script"
@@ -57,6 +56,12 @@ rsync_copy_file()
     local source=$1
     local dest=$2
 
-    export ftp_password
+    export_variables_to_expect
     expect $rsync_script scp $source $dest
+}
+
+export_variables_to_expect()
+{
+    export ftp_password
+    export ftp_password_prompt
 }

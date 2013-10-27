@@ -160,7 +160,7 @@ function log_in($wordpress_url, $username, $password, $debug_dir)
     // Login to wordpress
     print "Logging into WordPress ... ";
 
-    $result = load($wordpress_url."/wp-login.php?log=$username&pwd=" . urlencode($password) ."&wp-submit=Log In&testcookie=1", array('method'=>'post','return_info'=>true, 'curl_handle'=>false));
+    $result = load($wordpress_url."/wp-login.php?log=$username&pwd=" . urlencode($password) ."&wp-submit=Log In", array('method'=>'post','return_info'=>true, 'curl_handle'=>false));
 
     if (!$result['body'])
     { // The returned page was empty
@@ -181,8 +181,13 @@ function log_in($wordpress_url, $username, $password, $debug_dir)
 function back_up($remote_backups_dir, $wordpress_url, $log_in_result, $debug_dir)
 {
     $extra_tables = array(
-        "wp_usermeta", 
-        "wp_users");
+        'wp_blc_filters',
+        'wp_blc_instances',
+        'wp_blc_links',
+        'wp_blc_sync',
+        'wp_usermeta', 
+        'wp_users',
+    );
 
     $prefix = "&other_tables[]=";
     $extra_tables_params = $prefix . implode($prefix, $extra_tables);

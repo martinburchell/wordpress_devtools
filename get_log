@@ -17,6 +17,7 @@ log_dir=$2
 
 command_log_file=$logs_dir/get_${log_prefix}.log
 
+todays_date=`date +%Y%m%d`
 date_stamp=`date +%F_%H-%M-%S`
 year=`date +%Y`
 
@@ -26,7 +27,7 @@ mkdir -p $local_log_dir
 log_file=$local_log_dir/${date_stamp}.log.gz
 log_link=$local_log_dir/${log_prefix}.gz
 
-rsync_copy_changes $remote_logs_dir/${log_prefix}.processed.1.gz $log_file > $command_log_file
+rsync_copy_changes $remote_logs_dir/${log_prefix}-${todays_date}.gz $log_file > $command_log_file
 
 if [ -h $log_link ]; then
     diff $log_link $log_file > /dev/null

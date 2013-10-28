@@ -2,8 +2,8 @@
 
 bin_dir="$( cd "$( dirname "$0" )" && pwd )"
 
-$bin_dir/get_log access_log access
-$bin_dir/get_log error_log error
-$bin_dir/get_log xferlog_regular xfer
- 
+source ${bin_dir}/website_config
 
+$bin_dir/get_log $access_log_name access
+$bin_dir/get_log $error_log_name error
+$bin_dir/get_log $xfer_log_name xfer

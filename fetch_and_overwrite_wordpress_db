@@ -19,10 +19,11 @@ if [[ $? -ne 0 ]]; then
     send_email=1
 fi
 
+${bin_dir}/delete_remote_backups
+
 if [[ ${send_email} -ne 0 ]]; then
     cat ${log_file}
     exit 1
 fi
 
-${bin_dir}/delete_remote_backups
 ${bin_dir}/delete_local_backups

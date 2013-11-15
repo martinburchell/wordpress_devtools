@@ -111,6 +111,7 @@ Quietly overwrites the local uploads directory with the one on the remote server
 fetch_and_overwrite_wordpress_db
 --------------------------------
 Quietly overwrites the local database with the one on the remote server
+Requires PHP Curl module
 
 
 fetch_wordpress_code

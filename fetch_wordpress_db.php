@@ -102,36 +102,13 @@ if($sync_with_local)
         unlink($remote_tmp_file);
         unlink($local_tmp_file);        
 
-        $link = mysql_connect($local_db_server,$local_db_username,$local_db_password);
-        if ($link === false)
-        {
-            echo "Failed to connect to database $local_db_server";
-            exit(1);
-        }
+        $pdo = get_database_connection(
+            $local_db_server,
+            $local_db,
+            $local_db_username,
+            $local_db_password);
 
-        $success = mysql_select_db($local_db);
-        if ($success === false)
-        {
-            echo "Failed to select database $local_db";
-            exit(1);
-        }
-
-        $updates = array(
-            "UPDATE wp_options SET option_value = replace(option_value, '$site_url', '$local_url')",
-            "UPDATE wp_posts SET guid = replace(guid, '$site_url', '$local_url')",
-            "UPDATE wp_posts SET post_content = replace(post_content, '$site_url', '$local_url')",
-            );
-
-        foreach($updates as $update)
-        {
-            $success = mysql_query($update);
-            if ($success === false)
-            {
-                echo "Query failed:\n$update";
-                exit(1);
-            }
-        }
-        
+        update_urls($pdo, $local_url, $site_url);
         print "Import Done\n";
     }
     else
@@ -144,6 +121,57 @@ if($sync_with_local)
 
 print "All Done\n";
 
+function update_urls($pdo, $local_url, $site_url)
+{
+    $updates = array(
+        "UPDATE wp_options SET option_value = replace(option_value, ':site', ':local')",
+        "UPDATE wp_posts SET guid = replace(guid, ':site', ':local')",
+        "UPDATE wp_posts SET post_content = replace(post_content, ':site', ':local')",
+        );
+
+    foreach($updates as $update)
+    {
+        $statement = $pdo->prepare($update);
+        $statement->bindParam(':local', $local_url);
+        $statement->bindParam(':site', $site_url);
+        $ok = $statement->execute();
+        if ($ok === false)
+        {
+            echo "Query failed:\n$update";
+            
+            echo "\nPDOStatement::errorInfo():\n";
+            print_r($statement->errorInfo());
+
+            exit(1);
+        }
+    }
+}
+
+function get_database_connection($host, $db_name, $username, $password)
+{
+    try
+    {
+        $connection = "mysql:host=$host;dbname=$db_name";
+        echo $connection;
+
+        $pdo = new PDO(
+            $connection,
+            $username,
+            $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
+    catch (PDOException $e)
+    {
+        echo "Failed to connect to database $local_db_server";
+        echo $connection;
+        echo $e->getMessage();
+        exit(1);            
+    }
+
+    print_r($pdo);
+
+    return $pdo;
+}
 
 function log_in_and_back_up($remote_backups_dir, $wordpress_url, 
                             $username, $password, $debug_dir)

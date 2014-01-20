@@ -124,16 +124,15 @@ print "All Done\n";
 function update_urls($pdo, $local_url, $site_url)
 {
     $updates = array(
-        "UPDATE wp_options SET option_value = replace(option_value, ':site', ':local')",
-        "UPDATE wp_posts SET guid = replace(guid, ':site', ':local')",
-        "UPDATE wp_posts SET post_content = replace(post_content, ':site', ':local')",
+        "UPDATE wp_options SET option_value = replace(option_value, '$site_url', '$local_url')",
+        "UPDATE wp_posts SET guid = replace(guid, '$site_url', '$local_url')",
+        "UPDATE wp_posts SET post_content = replace(post_content, '$site_url', '$local_url')",
         );
 
     foreach($updates as $update)
     {
+        echo $update;
         $statement = $pdo->prepare($update);
-        $statement->bindParam(':local', $local_url);
-        $statement->bindParam(':site', $site_url);
         $ok = $statement->execute();
         if ($ok === false)
         {

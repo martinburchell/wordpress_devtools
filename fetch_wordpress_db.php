@@ -207,11 +207,12 @@ function log_in($wordpress_url, $username, $password, $debug_dir)
 
 function back_up($remote_backups_dir, $wordpress_url, $log_in_result, $debug_dir)
 {
+    // TODO: Remove hardcoded wp prefix 
     $extra_tables = array(
         'wp_blc_filters',
         'wp_blc_instances',
         'wp_blc_links',
-        'wp_blc_sync',
+        'wp_blc_synch',
         'wp_usermeta', 
         'wp_users',
     );

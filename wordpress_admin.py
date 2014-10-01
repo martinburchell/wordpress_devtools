@@ -3,10 +3,11 @@ import urllib
 
 from web_automation.website import Website
 
+
 class WordpressAdmin(Website):
     def log_in(self):
         log_in_page = self.insecure_domain + '/wp-login.php'
-        
+
         fields = self.read_hidden_fields(log_in_page)
         fields['log'] = self.login
         fields['pwd'] = self.password
@@ -15,23 +16,25 @@ class WordpressAdmin(Website):
 
         if self.debug:
             print 'Logging in...'
-        
+
         response = self.send_request_with_retry(log_in_page, login_data)
         response.close()
 
+    def refresh_calendars(self):
+        refresh_page = '{0}/wp-admin/edit.php?post_type=gce_feed'.format(
+            self.insecure_domain)
 
-    def refresh_calendar(self, id=1):
-        refresh_page = '{0}/wp-admin/options-general.php?page=google-calendar-events.php&action=refresh&id={1}'.format(self.insecure_domain, id)
-        
-        fields = self.read_hidden_fields(refresh_page)
-        fields['gce_options[submit_refresh]'] = 'Refresh Feed'
-        refresh_data = urllib.urlencode(fields)
+        root = self.send_request_and_return_dom(refresh_page)
+        selector = CSSSelector('span.clear_cache a')
 
-        options_page = '{0}/wp-admin/options.php'.format(self.insecure_domain)
-        
-        root = self.send_request_and_return_dom(options_page, refresh_data)
+        for element in selector(root):
+            self.refresh_calendar(element.get('href'))
 
-        selector = CSSSelector('#setting-error-gce_refreshed p strong')
+    def refresh_calendar(self, href):
+        root = self.send_request_and_return_dom('{0}{1}'.format(
+            self.insecure_domain, href))
+
+        selector = CSSSelector('#setting-error-gce-cache-updated p strong')
 
         notice_count = 0
 
@@ -41,7 +44,6 @@ class WordpressAdmin(Website):
 
         if notice_count == 0:
             print 'No notices found - feed may not have been refreshed'
-
 
     def read_hidden_fields(self, url):
         root = self.send_request_and_return_dom(url)
@@ -53,6 +55,3 @@ class WordpressAdmin(Website):
             fields[element.get('name')] = element.get('value')
 
         return fields
-        
-
-        

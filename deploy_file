@@ -3,7 +3,6 @@
 source website_config
 
 source error_functions
-source svn_functions
 source rsync_functions
 source confirm_functions
 source file_functions
@@ -15,8 +14,6 @@ fi
 
 source_file=$1
 target_file=$2
-
-svn_ensure_changes_checked_in $source_file
 
 temp_file=`file_print_temporary_name`.tmp
 

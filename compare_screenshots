@@ -33,9 +33,9 @@ function take_screenshot()
     local out_file=$2
 
     echo "Capturing $url as $out_file..." >> $log_file
-    
+
     export DISPLAY=:99.0
-    $cutycapt --url=$url --out=$out_file &>> $log_file
+    $cutycapt --min-width=900 --url=$url --out=$out_file &>> $log_file
     if [ $? != 0 ]; then
 	echo "Failed to download $url"
 	exit 1

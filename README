@@ -6,7 +6,7 @@ live server, namely rsync with expect to automate password entry.
 See the prerequisites for each tool below.
 
 You need to copy website_config.example to website_config and change all of the
-settings to something appropriate for your environment. 
+settings to something appropriate for your environment.
 
 The assumed workflow is:
 * Updates to code, plugins etc are made on the local dev server and checked into
@@ -14,8 +14,8 @@ The assumed workflow is:
 * Updates to the database and uploads are made on the live server, which can be
   fetched and installed locally
 
-There are also scripts to overwrite the remote database and uploads with the 
-local ones 
+There are also scripts to overwrite the remote database and uploads with the
+local ones
 
 
 backup_functions
@@ -35,7 +35,7 @@ Third party script used when copying local DB to live server
 
 compare_screenshots
 -------------------
-Takes a snapshot of each page on the website and compares it with the baseline 
+Takes a snapshot of each page on the website and compares it with the baseline
 to check for regressions
 Requires:
 * CutyCapt
@@ -51,23 +51,23 @@ Prompts the user to enter Y or N
 delete_backups
 --------------
 Deletes backups created by the Remote Database Backup Plugin
- 
+
 
 delete_local_backups
 --------------------
-Deletes backups created by the Remote Database Backup Plugin on the local 
+Deletes backups created by the Remote Database Backup Plugin on the local
 instance of WordPress
 
 
 delete_remote_backups
 ---------------------
-Deletes backups created by the Remote Database Backup Plugin on the remote 
+Deletes backups created by the Remote Database Backup Plugin on the remote
 instance of WordPress
 
 
 deploy_config
 -------------
-Copies wp-config.php to the remote server, following confirmation (this would 
+Copies wp-config.php to the remote server, following confirmation (this would
 not normally be the same file as the local wp-config.php).
 
 
@@ -87,7 +87,7 @@ Dumps local wordpress database to the backups directory
 Copies into temporary directory update_url script into temporary directory
 Copies the "big dump" (mysql importer) script into the temporary directory
 Copies the temporary directory into the remote backup directory
-Invokes the "big dump" script on the remote server 
+Invokes the "big dump" script on the remote server
 Invokes the "update url" script on the remote server
 Cleans up the temporary directory
 Removes the remote backup directory
@@ -101,7 +101,7 @@ Copy local uploads directory to remote server
 error_functions
 ---------------
 Exits with an error message if an error occurred.
- 
+
 
 fetch_and_overwrite_uploads
 ---------------------------
@@ -200,19 +200,19 @@ Check files are under version control
 
 update_local_urls_with_remote.sql
 ---------------------------------
-Example SQL to replace the domains in local URLs in WordPress tables with remote ones 
+Example SQL to replace the domains in local URLs in WordPress tables with remote ones
 
 
 update_remote_urls_with_local.sql
 ---------------------------------
-Example SQL to replace the domains in remote URLs in WordPress tables with local ones 
+Example SQL to replace the domains in remote URLs in WordPress tables with local ones
 
 
 validate_html
 -------------
 Runs the W3C validator on all pages and posts of the WordPress site.
 Requires:
-* validate (WDG offline validator)
+* vnu.jar (https://github.com/validator/validator)
 
 
 view_screenshot_diffs

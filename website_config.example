@@ -64,3 +64,4 @@ remote_uploads_dir=${wordpress_remote_target}wp-content/uploads/
 
 plugins_dir=${wordpress_local_source}wp-content/plugins/
 
+vnu_jar=/path/to/vnu.jar

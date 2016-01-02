@@ -9,7 +9,7 @@ function validate_page()
 {
     local url=$1
 
-    validate $url
+    java -Xss512k -jar $vnu_jar $url
 
     if [ $? -ne 0 ];then
 	echo Error validating $url

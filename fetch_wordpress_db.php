@@ -44,22 +44,22 @@ if ($sync_with_local)
 }
 
 
-$remote_backup_file_name = log_in_and_back_up($remote_backups_dir, $site_url, 
-                                              $username, $password, 
+$remote_backup_file_name = log_in_and_back_up($remote_backups_dir, $site_url,
+                                              $username, $password,
                                               $debug_dir);
 
 if($sync_with_local)
 {
     print "Syncing with Local database ...\n";
-        
+
     $remote_tmp_file = tempnam(sys_get_temp_dir(), 'remote');
     `gzip -cd $remote_backup_file_name > $remote_tmp_file`;
 
     $local_tmp_file = tempnam(sys_get_temp_dir(), 'local');
 
-    $local_backup_file_name = log_in_and_back_up($local_backups_dir, 
-                                                 $local_url, 
-                                                 $username, $password, 
+    $local_backup_file_name = log_in_and_back_up($local_backups_dir,
+                                                 $local_url,
+                                                 $username, $password,
                                                  $debug_dir);
 
     $escaped_local_url = str_replace("/", "\/", $local_url);
@@ -95,20 +95,17 @@ if($sync_with_local)
 
         if ($return_code != 0)
         {
-            print_r($output); 
+            print_r($output);
             exit($return_code);
         }
 
         unlink($remote_tmp_file);
-        unlink($local_tmp_file);        
+        unlink($local_tmp_file);
 
-        $pdo = get_database_connection(
-            $local_db_server,
-            $local_db,
-            $local_db_username,
-            $local_db_password);
+        // Should really pass this in but code due for rewrite anyway
+        $wordpress_path = "$debug_dir/../wordpress/";
 
-        update_urls($pdo, $local_url, $site_url);
+        update_urls($wordpress_path, $local_url, $site_url);
         print "Import Done\n";
     }
     else
@@ -121,62 +118,21 @@ if($sync_with_local)
 
 print "All Done\n";
 
-function update_urls($pdo, $local_url, $site_url)
+function update_urls($wordpress_path, $local_url, $site_url)
 {
-    $updates = array(
-        "UPDATE wp_options SET option_value = replace(option_value, '$site_url', '$local_url')",
-        "UPDATE wp_posts SET guid = replace(guid, '$site_url', '$local_url')",
-        "UPDATE wp_posts SET post_content = replace(post_content, '$site_url', '$local_url')",
-        );
+    $tables = array('wp_posts', 'wp_options');
 
-    foreach($updates as $update)
+    foreach($tables as $table)
     {
-        echo $update;
-        $statement = $pdo->prepare($update);
-        $ok = $statement->execute();
-        if ($ok === false)
-        {
-            echo "Query failed:\n$update";
-            
-            echo "\nPDOStatement::errorInfo():\n";
-            print_r($statement->errorInfo());
-
-            exit(1);
-        }
+        exec("wp search-replace --path=$wordpress_path $site_url $local_url $table");
     }
 }
 
-function get_database_connection($host, $db_name, $username, $password)
-{
-    try
-    {
-        $connection = "mysql:host=$host;dbname=$db_name";
-        echo $connection;
-
-        $pdo = new PDO(
-            $connection,
-            $username,
-            $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-    catch (PDOException $e)
-    {
-        echo "Failed to connect to database $local_db_server";
-        echo $connection;
-        echo $e->getMessage();
-        exit(1);            
-    }
-
-    print_r($pdo);
-
-    return $pdo;
-}
-
-function log_in_and_back_up($remote_backups_dir, $wordpress_url, 
+function log_in_and_back_up($remote_backups_dir, $wordpress_url,
                             $username, $password, $debug_dir)
 {
     $log_in_result = log_in($wordpress_url, $username, $password, $debug_dir);
-    $backup_file_name = back_up($remote_backups_dir, $wordpress_url, 
+    $backup_file_name = back_up($remote_backups_dir, $wordpress_url,
                                 $log_in_result, $debug_dir);
 
     return $backup_file_name;
@@ -207,13 +163,13 @@ function log_in($wordpress_url, $username, $password, $debug_dir)
 
 function back_up($remote_backups_dir, $wordpress_url, $log_in_result, $debug_dir)
 {
-    // TODO: Remove hardcoded wp prefix 
+    // TODO: Remove hardcoded wp prefix
     $extra_tables = array(
         'wp_blc_filters',
         'wp_blc_instances',
         'wp_blc_links',
         'wp_blc_synch',
-        'wp_usermeta', 
+        'wp_usermeta',
         'wp_users',
     );
 
@@ -232,7 +188,7 @@ function back_up($remote_backups_dir, $wordpress_url, $log_in_result, $debug_dir
     {
 	print "Done. Downloading $download_url[1] ...\n";
     }
-    else 
+    else
     { // Backup file's Download link was not found.
 	file_put_contents("$debug_dir/backup.html", $backup['body']);
 	print "Download file not found - exiting...\n";
@@ -268,12 +224,12 @@ function load($url,$options=array())
         'http_code'    => 200
     );
     $response = '';
-    
+
     $send_header = array(
         'Accept' => 'text/*',
         'User-Agent' => 'BinGet/1.00.A (http://www.bin-co.com/php/scripts/load/)'
     );
-    
+
     if ($options['cache'])
     {
     	$cache_folder = '/tmp/php-load-function/';
@@ -281,13 +237,13 @@ function load($url,$options=array())
             mkdir($cache_folder, 0777);
     	if (isset($options['cache_folder']))
             $cache_folder = $options['cache_folder'];
-    	
+
     	$cache_file_name = str_replace(array('http://', 'https://'),'', $url);
     	$cache_file_name = str_replace(
-    		array('/','\\',':','?','&','='), 
+    		array('/','\\',':','?','&','='),
     		array('_','_','-','.','-','_'), $cache_file_name);
     	$cache_file = joinPath($cache_folder, $cache_file_name); //Don't change the variable name - used at the end of the function.
-    	
+
     	if (file_exists($cache_file))
         { // Cached file exists - return that.
             if(!$options['return_info'])
@@ -299,14 +255,14 @@ function load($url,$options=array())
 
     ///////////////////////////// Curl /////////////////////////////////////
     //If curl is available, use curl to get the data.
-    if(function_exists("curl_init") 
+    if(function_exists("curl_init")
                 and (!(isset($options['use']) and $options['use'] == 'fsocketopen'))) { //Don't use curl if it is specifically stated to use fsocketopen in the options
-        
+
         if (isset($options['post_data']))
         { //There is an option to specify some data to be posted.
         	$page = $url;
         	$options['method'] = 'post';
-        	
+
         	if (is_array($options['post_data']))
                 { //The data is in array format.
                     $post_data = array();
@@ -315,7 +271,7 @@ function load($url,$options=array())
                         $post_data[] = "$key=" . urlencode($value);
                     }
                     $url_parts['query'] = implode('&', $post_data);
-			
+
                 }
                 else
                 { //Its a string
@@ -338,7 +294,7 @@ function load($url,$options=array())
             $ch = curl_init($url_parts['host']);
         else
             $ch = $options['curl_handle'];
-        
+
         curl_setopt($ch, CURLOPT_URL, $page) or die("Invalid cURL Handle Resouce");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); //Just return the data - not print the whole thing.
         curl_setopt($ch, CURLOPT_HEADER, true); //We need the headers
@@ -391,14 +347,14 @@ function load($url,$options=array())
         $separator_position = strpos($response,"\r\n\r\n");
         $header_text = substr($response,0,$separator_position);
         $body = substr($response,$separator_position+4);
-        
+
         foreach(explode("\n",$header_text) as $line)
         {
             $parts = explode(": ",$line);
             if(count($parts) == 2) $headers[$parts[0]] = chop($parts[1]);
         }
     }
-    
+
     if(isset($cache_file))
     { //Should we cache the URL?
     	file_put_contents($cache_file, $body);

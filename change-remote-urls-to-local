@@ -1,0 +1,15 @@
+#!/bin/bash
+
+bin_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+source ${bin_dir}/website_config
+
+cd $wordpress_local_source
+
+http_remote_url=http://$remote_domain
+https_remote_url=https://$remote_domain
+
+wp search-replace $http_remote_url $local_url wp_posts
+wp search-replace $http_remote_url $local_url wp_options
+wp search-replace $https_remote_url $local_url wp_posts
+wp search-replace $https_remote_url $local_url wp_options
